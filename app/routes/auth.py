@@ -35,9 +35,19 @@ async def signup_page(request: Request):
 async def login(credentials: UserCredentials, response: Response):
     """Handle login form submission."""
     auth_data = await AuthService.sign_in(credentials.email, credentials.password)
+    session = auth_data["session"]
+
+    # Set both access and refresh tokens
     response.set_cookie(
         key="access_token",
-        value=auth_data["session"].access_token,
+        value=session.access_token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+    )
+    response.set_cookie(
+        key="refresh_token",
+        value=session.refresh_token,
         httponly=True,
         secure=True,
         samesite="lax",
@@ -49,9 +59,19 @@ async def login(credentials: UserCredentials, response: Response):
 async def signup(credentials: UserCredentials, response: Response):
     """Handle signup form submission."""
     auth_data = await AuthService.sign_up(credentials.email, credentials.password)
+    session = auth_data["session"]
+
+    # Set both access and refresh tokens
     response.set_cookie(
         key="access_token",
-        value=auth_data["session"].access_token,
+        value=session.access_token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+    )
+    response.set_cookie(
+        key="refresh_token",
+        value=session.refresh_token,
         httponly=True,
         secure=True,
         samesite="lax",
@@ -65,5 +85,8 @@ async def logout(request: Request, response: Response):
     access_token = request.cookies.get("access_token")
     if access_token:
         await AuthService.sign_out(access_token)
+
+    # Clear both tokens
     response.delete_cookie(key="access_token")
+    response.delete_cookie(key="refresh_token")
     return {"success": True}

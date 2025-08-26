@@ -1,13 +1,126 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="hero min-h-[50vh]">
-  <div class="hero-content text-center">
-    <div class="max-w-md">
-      <h1 class="text-5xl font-bold">Track Your Habits</h1>
-      <p class="py-6">A minimalist habit tracking application to help you build good habits and break bad ones.</p>
-      <button class="btn btn-primary">Get Started</button>
+<div class="flex flex-col gap-6">
+  <!-- Header -->
+  <div class="flex justify-between items-center">
+    <h1 class="text-3xl font-bold">Today's Habits</h1>
+    <a href="/habits" class="btn btn-ghost">
+      Manage Habits
+    </a>
+  </div>
+
+  <!-- Date Navigation -->
+  <div class="flex justify-center items-center gap-4" x-data="{ 
+        today: new Date().toISOString().split('T')[0],
+        currentDate: '{{ date }}',
+        formatDate(date) {
+            return new Date(date).toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+    }">
+    <a :href="`/?date=${new Date(new Date(currentDate) - 86400000).toISOString().split('T')[0]}`"
+      class="btn btn-circle btn-ghost">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+        class="w-6 h-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+      </svg>
+    </a>
+
+    <div class="flex flex-col items-center">
+      <span class="text-lg font-bold" x-text="formatDate(currentDate)"></span>
+      <a x-show="currentDate !== today" :href="`/?date=${today}`" class="text-sm link link-primary">
+        Back to Today
+      </a>
+    </div>
+
+    <a :href="`/?date=${new Date(new Date(currentDate) + 86400000).toISOString().split('T')[0]}`"
+      x-bind:class="{ 'btn-disabled': currentDate >= today }" class="btn btn-circle btn-ghost">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+        class="w-6 h-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+      </svg>
+    </a>
+  </div>
+
+  <!-- Good Habits -->
+  {% if good_habits %}
+  <div class="card bg-base-200 shadow-xl">
+    <div class="card-body">
+      <h2 class="card-title text-success mb-4">Good Habits</h2>
+      <div class="flex flex-col gap-4">
+        {% for habit in good_habits %}
+        <div class="flex items-center justify-between gap-4 p-4 bg-base-100 rounded-lg"
+          x-data="{ completed: {{ 'true' if habit.log and habit.log.completed else 'false' }} }">
+          <div class="flex items-center gap-4">
+            <input type="checkbox" class="checkbox checkbox-success" x-model="completed" @change="
+                                   fetch('/habits/{{ habit.id }}/toggle', { method: 'POST' })
+                                   .then(() => completed = !completed)
+                               " :disabled="currentDate > today">
+            <div>
+              <h3 class="font-bold">{{ habit.name }}</h3>
+              <div class="text-sm opacity-70">
+                Current Streak: {{ habit.current_streak }} days
+                {% if habit.goal_streak %}
+                (Goal: {{ habit.goal_streak }} days)
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          <div class="badge badge-success" x-show="completed">Done!</div>
+        </div>
+        {% endfor %}
+      </div>
     </div>
   </div>
+  {% endif %}
+
+  <!-- Bad Habits -->
+  {% if bad_habits %}
+  <div class="card bg-base-200 shadow-xl">
+    <div class="card-body">
+      <h2 class="card-title text-error mb-4">Bad Habits</h2>
+      <div class="flex flex-col gap-4">
+        {% for habit in bad_habits %}
+        <div class="flex items-center justify-between gap-4 p-4 bg-base-100 rounded-lg"
+          x-data="{ avoided: {{ 'true' if habit.log and habit.log.completed else 'false' }} }">
+          <div class="flex items-center gap-4">
+            <input type="checkbox" class="checkbox checkbox-error" x-model="avoided" @change="
+                                   fetch('/habits/{{ habit.id }}/toggle', { method: 'POST' })
+                                   .then(() => avoided = !avoided)
+                               " :disabled="currentDate > today">
+            <div>
+              <h3 class="font-bold">{{ habit.name }}</h3>
+              <div class="text-sm opacity-70">
+                Days Avoided: {{ habit.current_streak }}
+                {% if habit.goal_streak %}
+                (Goal: {{ habit.goal_streak }} days)
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          <div class="badge badge-error" x-show="avoided">Avoided!</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if not good_habits and not bad_habits %}
+  <div class="hero min-h-[50vh]">
+    <div class="hero-content text-center">
+      <div class="max-w-md">
+        <h2 class="text-2xl font-bold mb-4">No Habits Yet</h2>
+        <p class="mb-6">Start by adding some habits to track!</p>
+        <a href="/habits" class="btn btn-primary">Add Habits</a>
+      </div>
+    </div>
+  </div>
+  {% endif %}
 </div>
 {% endblock %}
