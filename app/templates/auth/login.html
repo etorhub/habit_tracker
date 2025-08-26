@@ -1,0 +1,11 @@
+{% extends "auth/form_base.html" %}
+
+{% block form_title %}Login{% endblock %}
+
+{% block form_action %}/login{% endblock %}
+
+{% block button_text %}Login{% endblock %}
+
+{% block alternative_action %}
+<p>Don't have an account? <a href="/signup" class="link link-primary">Sign up</a></p>
+{% endblock %}

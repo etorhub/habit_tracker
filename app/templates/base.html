@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }} - Habit Tracker</title>
-    
+
     <!-- Tailwind CSS + DaisyUI via CDN -->
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.6.1/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
@@ -18,25 +19,50 @@
             }
         }
     </script>
-    
+
     <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-    
+
     <!-- Alpine.js -->
     <script defer src="https://unpkg.com/alpinejs@3.13.5/dist/cdn.min.js"></script>
 
     <!-- Custom styles -->
     <style>
-        [x-cloak] { display: none !important; }
+        [x-cloak] {
+            display: none !important;
+        }
     </style>
 </head>
+
 <body class="min-h-screen bg-base-100">
     <nav class="navbar bg-base-200">
         <div class="flex-1">
             <a href="/" class="btn btn-ghost text-xl">Habit Tracker</a>
         </div>
         <div class="flex-none">
-            <!-- We'll add auth buttons here later -->
+            {% if user %}
+            <div class="dropdown dropdown-end">
+                <label tabindex="0" class="btn btn-ghost btn-circle avatar placeholder">
+                    <div class="bg-neutral text-neutral-content rounded-full w-10">
+                        <span>{{ user.email[:2].upper() if user.email else 'U' }}</span>
+                    </div>
+                </label>
+                <ul tabindex="0"
+                    class="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
+                    <li>
+                        <form x-data @submit.prevent="
+                                await fetch('/logout', { method: 'POST' });
+                                window.location.href = '/login';
+                            ">
+                            <button type="submit" class="text-error">Logout</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+            {% else %}
+            <a href="/login" class="btn btn-ghost">Login</a>
+            <a href="/signup" class="btn btn-primary">Sign Up</a>
+            {% endif %}
         </div>
     </nav>
 
@@ -50,4 +76,5 @@
         </div>
     </footer>
 </body>
+
 </html>

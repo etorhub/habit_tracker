@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-[80vh] flex items-center justify-center">
+  <div class="card w-96 bg-base-200 shadow-xl">
+    <div class="card-body">
+      <h2 class="card-title justify-center text-2xl mb-4">{% block form_title %}{% endblock %}</h2>
+
+      <form x-data="{ 
+                email: '', 
+                password: '', 
+                loading: false,
+                error: '',
+                async submit() {
+                    this.loading = true;
+                    this.error = '';
+                    try {
+                        const response = await fetch('{% block form_action %}{% endblock %}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                email: this.email,
+                                password: this.password
+                            })
+                        });
+                        if (!response.ok) {
+                            const data = await response.json();
+                            throw new Error(data.detail || 'Something went wrong');
+                        }
+                        window.location.href = '/';
+                    } catch (e) {
+                        this.error = e.message;
+                    } finally {
+                        this.loading = false;
+                    }
+                }
+            }" @submit.prevent="submit">
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">Email</span>
+          </label>
+          <input type="email" x-model="email" class="input input-bordered" required />
+        </div>
+
+        <div class="form-control mt-4">
+          <label class="label">
+            <span class="label-text">Password</span>
+          </label>
+          <input type="password" x-model="password" class="input input-bordered" required />
+        </div>
+
+        <div x-show="error" x-cloak class="alert alert-error mt-4">
+          <span x-text="error"></span>
+        </div>
+
+        <div class="form-control mt-6">
+          <button type="submit" class="btn btn-primary" x-bind:disabled="loading">
+            <span x-show="loading" class="loading loading-spinner"></span>
+            {% block button_text %}{% endblock %}
+          </button>
+        </div>
+
+        <div class="divider">OR</div>
+
+        <div class="text-center">
+          {% block alternative_action %}{% endblock %}
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
