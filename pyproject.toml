@@ -1,0 +1,36 @@
+[tool.poetry]
+name = "habit_tracker"
+version = "0.1.0"
+description = "A habit tracking application with FastAPI, HTMX, and Alpine.js"
+authors = ["Your Name <your.email@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+fastapi = "^0.109.0"
+uvicorn = "^0.27.0"
+jinja2 = "^3.1.2"
+python-dotenv = "^1.0.0"
+sqlmodel = "^0.0.14"
+supabase = "^2.3.0"
+python-multipart = "^0.0.6"
+itsdangerous = "^2.1.2"
+pydantic-settings = "^2.1.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.1.0"
+mypy = "^1.8.0"
+pytest = "^8.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
+target-version = ['py39']
+include = '\.pyi?$'
+
+[tool.mypy]
+python_version = "3.9"
+strict = true
+ignore_missing_imports = true
